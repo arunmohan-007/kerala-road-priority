@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Explore priority roads and surveyed traffic across Kerala.">
+<title>Kerala Road Priority | Traffic Atlas</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./vendor/leaflet.css">
+<link rel="stylesheet" href="./style.css">
+<script src="./vendor/leaflet.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#ranking">Skip to road priority list</a>
+<header class="top">
+  <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">K</span> KERALA <span>TRAFFIC ATLAS</span></a>
+  <nav aria-label="Sections"><a href="#explorer">Map explorer</a><a href="#ranking">Priority list</a><a href="#sources">Data notes</a></nav>
+</header>
+<main>
+  <section class="hero" aria-labelledby="page-title">
+    <div class="hero-content">
+      <p class="eyebrow">KERALA PUBLIC WORKS ROAD NETWORK</p>
+      <h1 id="page-title">Road priority dashboard</h1>
+      <p class="intro">Explore ranked roads, locate traffic survey stations and compare daily commercial volumes across Kerala.</p>
+    </div>
+    <div class="metrics" aria-label="Network summary">
+      <article><span>Priority roads</span><strong id="road-count">—</strong></article>
+      <article><span>Mapped road sections</span><strong id="section-count">—</strong></article>
+      <article><span>Traffic stations</span><strong id="station-count">—</strong></article>
+      <article><span>Peak commercial count</span><strong id="peak-count">—</strong><small>vehicles / day</small></article>
+    </div>
+  </section>
+  <div class="workspace">
+    <section id="explorer" aria-labelledby="explore-title">
+      <div class="section-bar"><div><p class="eyebrow">NETWORK EXPLORER</p><h2 id="explore-title">Priority roads &amp; traffic stations</h2></div><button id="reset" type="button">Reset map</button></div>
+      <div class="map-shell">
+        <aside class="rail">
+          <label for="search">Find a road or station</label>
+          <input id="search" type="search" placeholder="Search road, rank or station ID">
+          <p id="results" class="muted" role="status">Loading road data…</p>
+          <div id="road-list" class="road-list" aria-label="Matching roads"></div>
+        </aside>
+        <div class="map-wrap">
+          <div id="map" aria-label="Interactive map of Kerala priority roads"></div>
+          <div class="map-tools">
+            <label class="visually-hidden" for="map-mode">Road map colours</label>
+            <select id="map-mode"><option value="identity">Road colours</option><option value="commercial">Peak commercial count</option></select>
+            <label class="check"><input id="show-stations" type="checkbox" checked> Stations</label>
+          </div>
+          <div class="legend" id="legend"></div>
+          <p id="map-status" class="map-status" role="status" hidden></p>
+        </div>
+      </div>
+      <section id="detail" class="detail" aria-label="Selected road" hidden></section>
+    </section>
+    <section id="ranking" aria-labelledby="rank-title">
+      <div class="section-bar"><div><p class="eyebrow">PRIORITY DASHBOARD</p><h2 id="rank-title">Road priority list</h2></div><button id="download" type="button" disabled>Download CSV</button></div>
+      <p class="subhead">Workbook ranks and surveyed volumes in vehicles per day. Select a road to see its full route and traffic stations.</p>
+      <div class="table-wrap" tabindex="0" aria-label="Scrollable ranking table">
+        <table>
+          <thead>
+            <tr class="column-groups"><th rowspan="2" scope="col" data-key="rank" aria-sort="ascending"><button data-sort="rank">Rank</button></th><th rowspan="2" scope="col" data-key="name"><button data-sort="name">Road name</button></th><th colspan="3" scope="colgroup">Commercial count</th><th colspan="3" scope="colgroup">AADT*</th></tr>
+            <tr><th scope="col" data-key="commercial.max"><button data-sort="commercial.max">Max</button></th><th scope="col" data-key="commercial.min"><button data-sort="commercial.min">Min</button></th><th scope="col" data-key="commercial.mean"><button data-sort="commercial.mean">Mean</button></th><th scope="col" data-key="aadt.max"><button data-sort="aadt.max">Max</button></th><th scope="col" data-key="aadt.min"><button data-sort="aadt.min">Min</button></th><th scope="col" data-key="aadt.mean"><button data-sort="aadt.mean">Mean</button></th></tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+      </div>
+      <p class="table-note">* The source supplies survey-period ADT. “AADT” in this dashboard displays that value.</p>
+    </section>
+    <details id="sources">
+      <summary>Sources and methodology</summary>
+      <ul>
+        <li>Road ranks come from the Road Priority sheet. Both Thrissur Kuttipuram spellings are mapped as one road. Tirur – Malappuram – Manjeri appears at ranks 13 and 26 with only a capitalization difference. The dashboard pools those stations under rank 13 and preserves the other workbook ranks, leaving a gap at 26.</li>
+        <li>The KLRAMS road network shapefile supplies the full named alignments. Section IDs confirm the three workbook-to-shapefile aliases for Kayamkulam – Pathanapuram, Alappuzha – Arthungal Chellanam and Ezhamkulam – Enadi.</li>
+        <li>Station labels use the source station IDs. Their positions are estimated from section chainage along the mapped line. The traffic workbook contains survey-period ADT and daily commercial counts.</li>
+        <li>Minima, maxima and arithmetic means use the surveyed stations on each road. The road heat map uses the highest station commercial count per road. Station colours use each station’s own commercial count on the same scale.</li>
+      </ul>
+    </details>
+  </div>
+</main>
+<footer>Kerala Traffic Atlas <span>Road priority and traffic survey data</span></footer>
+</body>
+</html>
