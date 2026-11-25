@@ -272,9 +272,7 @@ async function start() {
     state.roads = data.features.map((feature) => feature.properties);
     for (const feature of data.features) drawRoad(feature);
     $("road-count").textContent = format(state.roads.length);
-    $("section-count").textContent = format(state.roads.reduce((sum, road) => sum + road.segments, 0));
     $("station-count").textContent = format(markerLayers.size);
-    $("peak-count").textContent = format(Math.max(...state.roads.map((road) => road.commercial.max)));
     filterRoads();
     selectRoad(null);
   } catch (error) {
