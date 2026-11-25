@@ -113,6 +113,32 @@ def stats(values):
     return {"min": min(values), "max": max(values), "mean": round(fmean(values), 2)}
 
 
+
+def combine_carriageways(stations):
+    by_id = {station["id"]: station for station in stations}
+    combined = []
+    for station in stations:
+        match = re.fullmatch(r"(.+\d)([AB])", station["id"])
+        if not match or not all(match[1] + suffix in by_id for suffix in "AB"):
+            combined.append(station)
+            continue
+        if match[2] == "B":
+            continue
+        a, b = (by_id[match[1] + suffix] for suffix in "AB")
+        assert a["days"] == b["days"] and a["chainage"] == b["chainage"], match[1]
+        combined.append({
+            **a,
+            "id": match[1],
+            "sourceIds": [a["id"], b["id"]],
+            "section": [a["section"], b["section"]],
+            "aadt": a["aadt"] + b["aadt"],
+            "commercial": a["commercial"] + b["commercial"],
+            "coordinate": [round((x + y) / 2, 6) for x, y in zip(a["coordinate"], b["coordinate"])],
+        })
+    assert len({station["id"] for station in combined}) == len(combined)
+    return combined
+
+
 def main():
     features = list(shapefile.Reader(str(next(SOURCE.glob("*/*.shp")))).iterShapeRecords())
     roads_by_name = defaultdict(list)
@@ -174,9 +200,12 @@ def main():
         combined = unique[normalized]["properties"]
         combined["sourceRanks"].append(current["rank"])
         combined["stations"].extend(current["stations"])
-        combined["aadt"] = stats([s["aadt"] for s in combined["stations"]])
-        combined["commercial"] = stats([s["commercial"] for s in combined["stations"]])
     roads = list(unique.values())
+    for feature in roads:
+        road = feature["properties"]
+        road["stations"] = combine_carriageways(road["stations"])
+        for metric in ("aadt", "commercial"):
+            road[metric] = stats([station[metric] for station in road["stations"]])
     assign_colors(roads)
     network = ROOT / "data" / "network"
     network.mkdir(exist_ok=True)
@@ -191,7 +220,9 @@ def main():
         }
     output = ROOT / "data" / "roads.json"
     output.write_text(json.dumps({"type": "FeatureCollection", "features": roads}, separators=(",", ":")), encoding="utf-8")
-    print(f"{len(roads)} roads, {sum(r['properties']['segments'] for r in roads)} sections, {len(used_stations)} stations")
+    locations = sum(len(r["properties"]["stations"]) for r in roads)
+    print(f"{locations} station locations from {len(used_stations)} survey records")
+    print(f"{len(roads)} roads, {sum(r['properties']['segments'] for r in roads)} sections")
 
 
 if __name__ == "__main__":

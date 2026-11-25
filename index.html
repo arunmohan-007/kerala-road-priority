@@ -7,9 +7,9 @@
 <title>Kerala Road Priority | KHRI</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./vendor/leaflet.css">
-<link rel="stylesheet" href="./style.css?v=summary">
+<link rel="stylesheet" href="./style.css?v=carriageways">
 <script src="./vendor/leaflet.js" defer></script>
-<script src="./app.js?v=summary" defer></script>
+<script src="./app.js?v=carriageways" defer></script>
 </head>
 <body>
 <a class="skip" href="#ranking">Skip to road priority list</a>
@@ -72,7 +72,7 @@
         <li>Road ranks come from the Road Priority sheet. Both Thrissur Kuttipuram spellings are mapped as one road. Tirur – Malappuram – Manjeri appears at ranks 13 and 26 with only a capitalization difference. The dashboard pools those stations under rank 13 and preserves the other workbook ranks, leaving a gap at 26.</li>
         <li>The KLRAMS road network shapefile supplies the full named alignments. Section IDs confirm the three workbook-to-shapefile aliases for Kayamkulam – Pathanapuram, Alappuzha – Arthungal Chellanam and Ezhamkulam – Enadi.</li>
         <li>Station labels use the source station IDs. Their positions are estimated from section chainage along the mapped line. The traffic workbook contains survey-period ADT and daily commercial counts.</li>
-        <li>Minima, maxima and arithmetic means use the surveyed stations on each road. The road heat map uses the highest station commercial count per road. Station colours use each station’s own commercial count on the same scale.</li>
+        <li>Matching A/B station IDs on the same road are combined into one location. Both traffic measures are summed across carriageways before calculating road minima, maxima and means. The marker sits midway between the two estimated positions. Ranks follow the source workbook. The road heat map uses the highest station commercial count per road. Station colours use each station’s own commercial count on the same scale.</li>
       </ul>
     </details>
   </div>

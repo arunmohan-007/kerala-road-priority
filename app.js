@@ -9,6 +9,7 @@ const heat = (value) => colors[thresholds.filter((limit) => value >= limit).leng
 const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (char) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const normalized = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
+const stationIds = (station) => [station.id, ...(station.sourceIds || [])].map(normalized);
 const leaf = window.L;
 const map = leaf.map("map", { scrollWheelZoom: false, maxZoom: 19 }).setView([10.54, 76.28], 7);
 leaf.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -36,7 +37,9 @@ const stationLabel = (count) => count + (count === 1 ? " station" : " stations")
 function popup(station, road) {
   return '<div class="popup"><strong>' + escapeHTML(station.id) + '</strong><p>' + escapeHTML(road.name) +
     '</p><dl><dt>AADT*</dt><dd>' + format(station.aadt) + '</dd><dt>Commercial count</dt><dd>' +
-    format(station.commercial) + '</dd></dl><small>Vehicles per day · ' + station.days +
+    format(station.commercial) + '</dd></dl>' +
+    (station.sourceIds ? '<small>Both carriageways · ' + station.sourceIds.map(escapeHTML).join(' + ') + '</small>' : '') +
+    '<small>Vehicles per day · ' + station.days +
     ' survey days<br>* Survey-period ADT<br>Estimated location at section chainage ' + format(station.chainage) + ' m</small></div>';
 }
 
@@ -96,7 +99,7 @@ function filterRoads() {
     normalized(road.name).includes(search) ||
     (search.includes("trissur") && normalized(road.name).includes(search.replace("trissur", "thrissur"))) ||
     road.sourceRanks.some((rank) => String(rank) === search) ||
-    road.stations.some((station) => normalized(station.id).includes(search)));
+    road.stations.some((station) => stationIds(station).some((id) => id.includes(search))));
   renderList();
   renderTable();
 }
@@ -106,7 +109,7 @@ function renderList() {
   const count = state.matches.length;
   $("results").textContent = count + (count === 1 ? " road" : " roads") + (query ? " found" : " in the priority list");
   $("road-list").innerHTML = state.matches.map((road) => {
-    const station = query ? road.stations.find((item) => normalized(item.id) === query) : null;
+    const station = query ? road.stations.find((item) => stationIds(item).includes(query)) : null;
     return '<button class="road-item" data-rank="' + road.rank + '" data-station="' + (station?.id || "") +
       '" aria-pressed="' + (state.selection === road) + '"><span class="pill">' + road.rank +
       '</span><span><strong>' + escapeHTML(road.name) + '</strong><small>' +
@@ -266,7 +269,7 @@ $("download").addEventListener("click", () => {
 async function start() {
   renderLegend();
   try {
-    const response = await fetch("./data/roads.json");
+    const response = await fetch("./data/roads.json?v=carriageways");
     if (!response.ok) throw new Error("Could not load the road dataset");
     const data = await response.json();
     state.roads = data.features.map((feature) => feature.properties);
