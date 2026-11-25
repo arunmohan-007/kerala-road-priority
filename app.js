@@ -169,7 +169,7 @@ async function selectRoad(road, station) {
   else map.fitBounds(roadLayers.get(road.rank).getBounds(), { padding: [34, 34], maxZoom: 15 });
   try {
     if (!geometryCache.has(road.rank)) {
-      const request = fetch("./data/network/" + road.rank + ".json").then((result) => {
+      const request = fetch("./data/network/" + road.rank + ".json?v=lanes-priority").then((result) => {
         if (!result.ok) throw new Error("Road geometry could not be loaded");
         return result.json();
       }).catch((error) => {
@@ -269,7 +269,7 @@ $("download").addEventListener("click", () => {
 async function start() {
   renderLegend();
   try {
-    const response = await fetch("./data/roads.json?v=carriageways");
+    const response = await fetch("./data/roads.json?v=lanes-priority");
     if (!response.ok) throw new Error("Could not load the road dataset");
     const data = await response.json();
     state.roads = data.features.map((feature) => feature.properties);

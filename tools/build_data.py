@@ -125,6 +125,7 @@ def combine_carriageways(stations):
         if match[2] == "B":
             continue
         a, b = (by_id[match[1] + suffix] for suffix in "AB")
+        assert a["section"].endswith("A") and b["section"] == a["section"][:-1] + "B", match[1]
         assert a["days"] == b["days"] and a["chainage"] == b["chainage"], match[1]
         combined.append({
             **a,
@@ -150,7 +151,7 @@ def main():
     traffic = sheet_rows(SOURCE / "traffic adata new.xlsx", "traffic adata new")
     surveys = {row[0]: row for row in traffic}
     assert len(surveys) == len(traffic)
-    priorities = sheet_rows(SOURCE / "Prioritised_Road_List_Corrected.xlsx", "Road Priority")
+    priorities = sheet_rows(SOURCE / "Prioritised_Road_List_Lanes_Combined.xlsx", "Road Priority")
     roads = []
     used_stations = set()
     for rank, name, section_ids, station_count, mean_adt, mean_commercial, *_, station_ids in priorities:
@@ -158,7 +159,6 @@ def main():
             continue
         related = roads_by_name[key(name)]
         sections = {f.record.SEC_LABEL for f in related}
-        assert set(section_ids.split("; ")) <= sections, name
         stations = []
         for station_id in station_ids.split("; "):
             assert station_id not in used_stations, station_id
@@ -178,9 +178,15 @@ def main():
                 fraction = 1 - fraction
             stations.append(dict(id=station_id, section=section, chainage=chainage, days=days,
                                  aadt=adt, commercial=commercial, coordinate=interpolate(lines[0], fraction)))
-        adt = stats([s["aadt"] for s in stations])
-        commercial = stats([s["commercial"] for s in stations])
-        assert len(stations) == station_count
+        survey_locations = combine_carriageways(stations)
+        surveyed_sections = {
+            location["section"][0][:-1] if location.get("sourceIds") else location["section"]
+            for location in survey_locations
+        }
+        assert set(section_ids.split("; ")) == surveyed_sections, name
+        adt = stats([s["aadt"] for s in survey_locations])
+        commercial = stats([s["commercial"] for s in survey_locations])
+        assert len(survey_locations) == station_count
         assert abs(adt["mean"] - mean_adt) <= .00501 and abs(commercial["mean"] - mean_commercial) <= .00501, name
         roads.append({
             "type": "Feature",
@@ -218,6 +224,10 @@ def main():
             "coordinates": [[[round(x, 6), round(y, 6)] for x, y in line.coords]
                             for line in (LineString(points).simplify(.000055) for points in geometry["coordinates"])],
         }
+    current_files = {f"{road['properties']['rank']}.json" for road in roads}
+    for old in network.glob("*.json"):
+        if old.stem.isdecimal() and old.name not in current_files:
+            old.unlink()
     output = ROOT / "data" / "roads.json"
     output.write_text(json.dumps({"type": "FeatureCollection", "features": roads}, separators=(",", ":")), encoding="utf-8")
     locations = sum(len(r["properties"]["stations"]) for r in roads)
