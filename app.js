@@ -10,7 +10,7 @@ const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (char) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const normalized = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
 const leaf = window.L;
-const map = leaf.map("map", { scrollWheelZoom: false, preferCanvas: true, maxZoom: 19 }).setView([10.54, 76.28], 7);
+const map = leaf.map("map", { scrollWheelZoom: false, maxZoom: 19 }).setView([10.54, 76.28], 7);
 leaf.tileLayer("https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
   maxNativeZoom: 18,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.carto.com/attribution/">CARTO</a>',
@@ -38,7 +38,7 @@ function popup(station, road) {
   return '<div class="popup"><strong>' + escapeHTML(station.id) + '</strong><p>' + escapeHTML(road.name) +
     '</p><dl><dt>AADT*</dt><dd>' + format(station.aadt) + '</dd><dt>Commercial count</dt><dd>' +
     format(station.commercial) + '</dd></dl><small>Vehicles per day · ' + station.days +
-    ' survey days<br>Estimated location at section chainage ' + format(station.chainage) + ' m</small></div>';
+    ' survey days<br>* Survey-period ADT<br>Estimated location at section chainage ' + format(station.chainage) + ' m</small></div>';
 }
 
 function drawRoad(feature) {
