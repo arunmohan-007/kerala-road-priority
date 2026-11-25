@@ -11,9 +11,8 @@ const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (char) =>
 const normalized = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
 const leaf = window.L;
 const map = leaf.map("map", { scrollWheelZoom: false, maxZoom: 19 }).setView([10.54, 76.28], 7);
-leaf.tileLayer("https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
-  maxNativeZoom: 18,
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.carto.com/attribution/">CARTO</a>',
+leaf.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 leaf.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
 for (const [name, zIndex] of [["network", 410], ["selection", 420], ["stations", 430]]) {
